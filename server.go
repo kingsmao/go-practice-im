@@ -52,13 +52,8 @@ func (this *Server) BroadCast(user *User, msg string) {
 func (this *Server) Handler(conn net.Conn) {
 	//fmt.Println("链接建立成功")
 	//用户上线，将用户加入onlineMap中
-	user := NewUser(conn)
-	this.mapLock.Lock()
-	this.OnlineMap[user.Name] = user
-	this.mapLock.Unlock()
-
-	//向所有用户广播该user的上线消息
-	this.BroadCast(user, "已上线")
+	user := NewUser(conn, this)
+	user.Online()
 	//接受客户端发送的消息
 	go this.ReadClientMessage(conn, user)
 	//阻塞
@@ -71,7 +66,7 @@ func (this *Server) ReadClientMessage(conn net.Conn, user *User) {
 		for {
 			read, err := conn.Read(buf)
 			if read == 0 {
-				this.BroadCast(user, "下线")
+				user.Offline()
 				return
 			}
 			if err != nil && err != io.EOF {
@@ -81,7 +76,7 @@ func (this *Server) ReadClientMessage(conn net.Conn, user *User) {
 			//提取用户的消息（去除'\n'）
 			msg := string(buf[:read-1])
 			//广播消息
-			this.BroadCast(user, msg)
+			user.DoMessage(msg)
 		}
 	}()
 }
@@ -108,5 +103,4 @@ func (this *Server) Start() {
 		//do handler
 		go this.Handler(conn) //异步处理业务
 	}
-
 }
