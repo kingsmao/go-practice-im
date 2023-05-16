@@ -53,5 +53,18 @@ func (this *User) Offline() {
 
 //用户处理消息业务
 func (this *User) DoMessage(msg string) {
-	this.server.BroadCast(this, msg)
+	if msg == "who" {
+		//查询当前都哪些在线用户
+		for _, onlineUser := range this.server.OnlineMap {
+			onlineMsg := "[" + onlineUser.Addr + "]" + onlineUser.Name + ":" + "在线...\n"
+			this.sendMsg(onlineMsg)
+		}
+	} else {
+		this.server.BroadCast(this, msg)
+	}
+}
+
+//给当前用户发送消息
+func (this *User) sendMsg(msg string) {
+	this.conn.Write([]byte(msg))
 }
