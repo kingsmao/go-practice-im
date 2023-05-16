@@ -85,9 +85,9 @@ func (this *Server) UserHandler(conn net.Conn) {
 		case <-isAlive:
 		//当前用户是活跃的，需要重置定时器
 		//不需要做任何动作，为了激活select，更新下面的定时器
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second * 100):
 			//已经超时，将当前用户强制踢掉
-			user.sendMsg("超时被踢")
+			user.sendMe("超时被踢")
 			//关闭资源
 			close(user.C)
 			//delete(this.OnlineMap,user.Name)//不需要删除，有检测在线状态方法会删除
